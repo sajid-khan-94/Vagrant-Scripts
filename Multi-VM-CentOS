@@ -1,0 +1,38 @@
+Vagrant.configure("2") do |config|
+    servers=[
+        {
+          :hostname => "admin",
+          :box => "centos/7",
+          :ip => "172.16.1.50",
+          :ssh_port => '2200'
+        },
+        {
+          :hostname => "Slave1",
+          :box => "centos/7",
+          :ip => "172.16.1.51",
+          :ssh_port => '2201'
+        },
+        {
+          :hostname => "Slave2",
+          :box => "centos/7",
+          :ip => "192.168.56.102",
+          :ssh_port => '2202'
+        }
+      ]
+
+    servers.each do |machine|
+        config.vm.define machine[:hostname] do |node|
+            node.vm.box = machine[:box]
+            node.vm.hostname = machine[:hostname]
+            node.vm.network :private_network, ip: machine[:ip]
+            node.vm.network "forwarded_port", guest: 22, host: machine[:ssh_port], id: "ssh"
+#           node.vm.synced_folder "/c/Users/t0242998/Downloads/cmder/centos-machine/data", "/home/vagrant/data"
+            node.vm.provision "file", source: "./copiedfile.txt", destination: "/home/vagrant/copiedfile.txt"
+
+            node.vm.provider :virtualbox do |vb|
+                vb.customize ["modifyvm", :id, "--memory", 1024]
+                vb.customize ["modifyvm", :id, "--cpus", 2]
+            end
+        end
+    end
+end
